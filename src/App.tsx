@@ -1,23 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
+import { PandaSigner, ScryptProvider, toByteString, sha256 } from 'scrypt-ts';
 
 function App() {
+
+
+  const [formData, setFormData] = useState({
+    textFieldOne: '',
+  });
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/App.tsx</code> and save to reload.
+          Hello World sCrypt App
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <input
+                type="text"
+                name="textFieldOne"
+                value={formData.textFieldOne}
+                onChange={handleChange}
+                placeholder="Message"
+              />
+
+
+
+<button>{"submit"}</button>
+
+
       </header>
     </div>
   );
