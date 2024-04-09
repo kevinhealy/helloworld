@@ -8,7 +8,7 @@ function App() {
     textFieldOne: '',
   });
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData(prevFormData => ({
       ...prevFormData,
@@ -17,23 +17,25 @@ function App() {
   };
 
   const loadWallet = async () => {
+
     const provider = new DefaultProvider({
       network: bsv.Networks.testnet
-  });
+    });
   
-  const signer = new PandaSigner(provider);
-  
-  // request authentication
-  const { isAuthenticated, error } = await signer.requestAuth();
-  if (!isAuthenticated) {
-      alert(error);
-  }
-  
-  // authenticated
-  // you can show user's default address
-  const userAddress = await signer.getDefaultAddress();
+    const signer = new PandaSigner(provider);
+    
+    // request authentication
+    const { isAuthenticated, error } = await signer.requestAuth();
+    
+    if (!isAuthenticated) {
+        alert(error);
+    } else {
+      // authenticated
+      // you can show user's default address
+      const userAddress = await signer.getDefaultAddress();
+      alert('user is authenticated ' + userAddress);
+    }
 
-  alert('user is authenticated ' + userAddress);
   };
 
   const submitForm = () => {
@@ -53,7 +55,7 @@ function App() {
                 type="text"
                 name="textFieldOne"
                 value={formData.textFieldOne}
-                onChange={handleChange}
+                onChange={handleTextFieldChange}
                 placeholder="Message"
               />
       
