@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { PandaSigner, ScryptProvider, toByteString, sha256 } from 'scrypt-ts';
+import { PandaSigner, DefaultProvider, ScryptProvider, toByteString, sha256, bsv } from 'scrypt-ts';
 
 function App() {
-
 
   const [formData, setFormData] = useState({
     textFieldOne: '',
@@ -17,9 +16,36 @@ function App() {
     }));
   };
 
+  const loadWallet = async () => {
+    const provider = new DefaultProvider({
+      network: bsv.Networks.testnet
+  });
+  
+  const signer = new PandaSigner(provider);
+  
+  // request authentication
+  const { isAuthenticated, error } = await signer.requestAuth();
+  if (!isAuthenticated) {
+      alert(error);
+  }
+  
+  // authenticated
+  // you can show user's default address
+  const userAddress = await signer.getDefaultAddress();
+
+  alert('user is authenticated ' + userAddress);
+  };
+
+  const submitForm = () => {
+    alert('Submit Form');
+  };
+
   return (
     <div className="App">
       <header className="App-header">
+
+      <button onClick={loadWallet}>Load Wallet</button>
+
         <p>
           Hello World sCrypt App
         </p>
@@ -30,10 +56,9 @@ function App() {
                 onChange={handleChange}
                 placeholder="Message"
               />
+      
 
-
-
-<button>{"submit"}</button>
+      <button onClick={submitForm}>Submit Form</button>
 
 
       </header>
