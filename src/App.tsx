@@ -1,16 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-import { PandaSigner, DefaultProvider, ScryptProvider, toByteString, sha256, bsv } from 'scrypt-ts';
+import { PandaSigner, DefaultProvider, ScryptProvider, toByteString, sha256, bsv, MethodCallOptions } from 'scrypt-ts';
+import { Helloworld } from './contracts/helloworld';
 
 function App() {
 
   const [formData, setFormData] = useState({
-    textFieldDeployContract: '',
-    textFieldCallContract: '',
+    textFieldDeployMessage: '',
+    textFieldCallTransactionID: '',
+    textFieldCallMessage: '',
   });
 
   const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+   // alert(event.target.name + " " + event.target.value)
     const { name, value } = event.target;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const updateStateVariable = (name:string, value:string) => {
+
+   // alert(name + " " + value)
     setFormData(prevFormData => ({
       ...prevFormData,
       [name]: value,
@@ -39,35 +52,68 @@ function App() {
 
   };
 
-  const deployContract = () => {
+  const deployContract = async () => {
 
+    const provider = new DefaultProvider({
+      network: bsv.Networks.testnet
+    });
+  
+    const signer = new PandaSigner(provider);
     // construct a new instance of `MyContract`
-    //let instance = new MyContract(...initArgs);
+    const message = formData.textFieldDeployMessage
+    const messageByteString = toByteString(message, true)
+    let instance = new Helloworld(sha256(messageByteString));
 
     // connect the signer to the instance
-    //await instance.connect(signer);
+    await instance.connect(signer);
 
     // the contract UTXO’s satoshis
-    //const initBalance = 1234;
+    const initBalance = 1234;
 
-    // build and send tx for deployment
-    //const deployTx = await instance.deploy(initBalance);
+    try {
+      // build and send tx for deployment
+      const deployTx = await instance.deploy(initBalance);
+      
+      alert(`Successfully Deployed "${message}" at txid ${deployTx.id}`);
 
-    //alert(`Smart contract successfully deployed with txid ${deployTx.id}`);
-    alert('deploy contract')
+      updateStateVariable("textFieldCallTransactionID", deployTx.id)
+    
+    } catch (error) {
+      alert(error)
+    }
 
   };
 
-  const callContract = () => {
+  const callContract = async () => {
 
-    // 1) fetch a transaction from txid
-    //const tx = await signer.connectedProvider.getTransaction(txId)
-    // 2) create instance from transaction
-    //const instance = Counter.fromTx(tx, atOutputIndex)
+    const provider = new DefaultProvider({
+      network: bsv.Networks.testnet
+    });
+  
+    const signer = new PandaSigner(provider);
 
-    //console.log('contract called: ', callTx.id);
-    alert('Call Contract');
+    const txId = formData.textFieldCallTransactionID
+
+    const atOutputIndex = 0
+
+    const tx = await signer.connectedProvider.getTransaction(txId)
+    const instance = Helloworld.fromTx(tx, atOutputIndex)
+
+    await instance.connect(signer)
+
+    const nextInstance = instance.next()
+
+    const message = formData.textFieldCallMessage
+    const messageByteString = toByteString(message, true)
     
+    try {
+      const { tx: callTx } = await instance.methods.unlock(messageByteString)
+      alert(`Successfully Called "${message}" at txid ${callTx.id}`);
+    
+    } catch (error) {
+      alert(error)
+    }
+
   };
 
   return (
@@ -81,8 +127,8 @@ function App() {
         <p> Deploy Contract With Text Locking Script  <br />
           <input
             type="text"
-            name="textFieldDeployContract"
-            value={formData.textFieldDeployContract}
+            name="textFieldDeployMessage"
+            value={formData.textFieldDeployMessage}
             onChange={handleTextFieldChange}
             placeholder="Message"
           />
@@ -94,8 +140,16 @@ function App() {
         <p> Call Contract With Text Unlocking Script <br />
           <input
             type="text"
-            name="textFieldCallContract"
-            value={formData.textFieldCallContract}
+            name="textFieldCallTransactionID"
+            value={formData.textFieldCallTransactionID}
+            onChange={handleTextFieldChange}
+            placeholder="txID"
+          />
+
+          <input
+            type="text"
+            name="textFieldCallMessage"
+            value={formData.textFieldCallMessage}
             onChange={handleTextFieldChange}
             placeholder="Message"
           />
