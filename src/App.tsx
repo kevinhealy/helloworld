@@ -5,6 +5,8 @@ import { Helloworld } from './contracts/helloworld';
 
 function App() {
 
+  //FOR MANAGING STATE VARIABLES
+
   const [formData, setFormData] = useState({
     textFieldDeployMessage: '',
     textFieldCallTransactionID: '',
@@ -12,8 +14,6 @@ function App() {
   });
 
   const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-
-   // alert(event.target.name + " " + event.target.value)
     const { name, value } = event.target;
     setFormData(prevFormData => ({
       ...prevFormData,
@@ -22,13 +22,14 @@ function App() {
   };
 
   const updateStateVariable = (name:string, value:string) => {
-
-   // alert(name + " " + value)
     setFormData(prevFormData => ({
       ...prevFormData,
       [name]: value,
     }));
   };
+
+
+  //FOR MANAGING TRANSACTIONS
 
   const loadWallet = async () => {
 
@@ -59,7 +60,7 @@ function App() {
     });
   
     const signer = new PandaSigner(provider);
-    // construct a new instance of `MyContract`
+
     const message = formData.textFieldDeployMessage
     const messageByteString = toByteString(message, true)
     let instance = new Helloworld(sha256(messageByteString));
